@@ -6,7 +6,7 @@ ____
 ScreenShot
 ----------
  
-![Screenshot](https://github.com/melvinjlobo/Metaball-Menu/blob/master/MetaballMenu.gif)
+![Screenshot](https://github.com/melvinjlobo/MetaballMenu/blob/master/MetaballMenu.gif)
  
 ___
 Usage
