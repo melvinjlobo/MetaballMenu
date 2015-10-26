@@ -25,3 +25,16 @@ proguard/
 
 # Log Files
 *.log
+
+# Local Properties
+/local.properties
+
+# IDEA
+/.idea
+
+
+# MAC
+.DS_Store
+
+# Captures
+/captures

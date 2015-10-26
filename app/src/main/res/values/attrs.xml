@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Custom attributes for Metaball Menu -->
+    <declare-styleable name="MetaballMenu">
+        <attr name="backgroundColor" format="color" />
+        <attr name="metaballColor" format="color" />
+    </declare-styleable>
+</resources>
