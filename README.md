@@ -1,6 +1,6 @@
 # Metaball-Menu
 A menu consisting of icons (ImageViews) and metaball bouncing selection to give a blob effect. Inspired by Material design
- 
+
 ____
  
 ScreenShot
@@ -75,3 +75,10 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+____
+
+
+[![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-MetaballMenu-green.svg?style=flat)](https://android-arsenal.com/details/1/2697)
+ 
+
