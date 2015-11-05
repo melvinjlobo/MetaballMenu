@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.metaballmenu.widgets.MetaballMenu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/metaball_menu"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="horizontal"
+    android:padding="10dp"
+    app:backgroundColor="@android:color/holo_purple"
+    app:metaballColor="@android:color/white"
+    app:drawablePadding="10dp"
+    app:backgroundShapeRadius="30dp"
+    app:needsElevation="true">
+
+    <ImageView
+        android:id="@+id/menuitem1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:padding="10dp"
+        android:src="@mipmap/card" />
+
+    <ImageView
+        android:id="@+id/menuitem2"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:padding="10dp"
+        android:src="@mipmap/dash" />
+
+    <ImageView
+        android:id="@+id/menuitem3"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:padding="10dp"
+        android:src="@mipmap/desc" />
+
+    <ImageView
+        android:id="@+id/menuitem4"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:padding="10dp"
+        android:src="@mipmap/hist" />
+</com.metaballmenu.widgets.MetaballMenu>

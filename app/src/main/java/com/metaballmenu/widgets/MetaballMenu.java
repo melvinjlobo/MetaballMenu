@@ -3,11 +3,21 @@ package com.metaballmenu.widgets;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
+import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.RoundRectShape;
+import android.graphics.drawable.shapes.Shape;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.BounceInterpolator;
@@ -25,10 +35,19 @@ import com.metaballmenu.R;
  * 2.  http://paperjs.org/examples/meta-balls/
  * 3.  https://github.com/calvinmetcalf/deckdemo/blob/master/src/documents/examples/Tools/MetaBalls.html
  *
+ * Note that this widget will load a default background shape if none is given.
  */
 public class MetaballMenu extends LinearLayout {
 
     //////////////////////////////////// CLASS MEMBERS /////////////////////////////////////////////
+    /**
+     * Static definitions
+     */
+    private static final String SHAPE_1_COLOR = "#10000000";
+    private static final String SHAPE_2_COLOR = "#13000000";
+    private static final String SHAPE_3_COLOR = "#20000000";
+    private static final int DEFAULT_BACKGROUND_RADIUS = 20;
+
     /**
      * The background color for the view
      */
@@ -104,6 +123,26 @@ public class MetaballMenu extends LinearLayout {
      */
     private MetaballMenuClickListener mMenuClickListener = null;
 
+    /**
+     * Note if the background color has been set
+     */
+    private boolean mbBackgroundSet = false;
+
+    /**
+     * The padding around the image to add to the breathing space to draw the selector
+     */
+    private float mDrawablePadding = 0.0f;
+
+    /**
+     * The background shape radius
+     */
+    private float mBackgroundShapeRadius = 0.0f;
+
+    /**
+     * Indicates if we need an elevation for the background shape
+     */
+    private boolean mbElevationRequired = false;
+
 
     //////////////////////////////////// CLASS METHODS /////////////////////////////////////////////
     /**
@@ -171,6 +210,9 @@ public class MetaballMenu extends LinearLayout {
 
             mBackgroundColor = a.getColor(R.styleable.MetaballMenu_backgroundColor, ContextCompat.getColor(context, android.R.color.holo_purple));
             mMetaballColor = a.getColor(R.styleable.MetaballMenu_metaballColor, ContextCompat.getColor(context, android.R.color.white));
+            mDrawablePadding = a.getDimension(R.styleable.MetaballMenu_drawablePadding, 0.0f);
+            mBackgroundShapeRadius = a.getDimension(R.styleable.MetaballMenu_backgroundShapeRadius, d2x(DEFAULT_BACKGROUND_RADIUS));
+            mbElevationRequired = a.getBoolean(R.styleable.MetaballMenu_needsElevation, false);
 
             // Initialize the Metaball paint
             mMetaballDestination.setColor(mMetaballColor);
@@ -180,7 +222,8 @@ public class MetaballMenu extends LinearLayout {
         }
 
         //Set the background color
-        setBackgroundColor(mBackgroundColor);
+        //setBackgroundColor(mBackgroundColor);
+        setBackground(createBackgroundShape());
 
         //Set the orientation
         setOrientation(LinearLayout.HORIZONTAL);
@@ -249,18 +292,113 @@ public class MetaballMenu extends LinearLayout {
     }
 
     /**
+     * Create the background shape / Layer -List programmatically. TO have the shadow effect, we need
+     * shapes placed on top of the other with varying Alphas and with an inset, to give an illusion of elevation
+     * An xml can also be provided to do this statically (included: menu_shape_shadow)
+     * The shape stack (starting from bottom) is: Shape1, Shape2, Shape3, foreground
+     *
+     * @author Melvin Lobo
+     */
+    private Drawable createBackgroundShape() {
+        //The radius array to draw the round rect shape. Each pair is for one corner
+        float[] radiiFloat = new float[] {mBackgroundShapeRadius, mBackgroundShapeRadius, mBackgroundShapeRadius, mBackgroundShapeRadius,
+                            mBackgroundShapeRadius, mBackgroundShapeRadius, mBackgroundShapeRadius, mBackgroundShapeRadius};
+        Drawable backgroundDrawable = null;
+
+        //Foreground Shape
+        RoundRectShape foregroundRect = new RoundRectShape(radiiFloat, null, null);
+        ShapeDrawable foregroundShape = new ShapeDrawable(foregroundRect);
+        foregroundShape.getPaint().setColor(mBackgroundColor);
+
+        if(mbElevationRequired) {
+            //First Shape
+            RoundRectShape rect1 = new RoundRectShape(radiiFloat, null, null);
+            ShapeDrawable shape1 = new ShapeDrawable(rect1);
+            shape1.getPaint().setColor(Color.parseColor(SHAPE_1_COLOR));
+
+            //Second Shape
+            RoundRectShape rect2 = new RoundRectShape(radiiFloat, null, null);
+            ShapeDrawable shape2 = new ShapeDrawable(rect2);
+            shape2.getPaint().setColor(Color.parseColor(SHAPE_2_COLOR));
+
+            //Third Shape
+            RoundRectShape rect3 = new RoundRectShape(radiiFloat, null, null);
+            ShapeDrawable shape3 = new ShapeDrawable(rect3);
+            shape3.getPaint().setColor(Color.parseColor(SHAPE_3_COLOR));
+
+            //Fourth Shape
+            RoundRectShape rect4 = new RoundRectShape(radiiFloat, null, null);
+            ShapeDrawable shape4 = new ShapeDrawable(rect4);
+            shape4.getPaint().setColor(Color.parseColor(SHAPE_2_COLOR));
+
+            //Create an array of shapes for the layer list
+            Drawable[] layerArray = {shape1, shape2, shape3, shape4, foregroundShape};
+
+            LayerDrawable drawable = new LayerDrawable(layerArray);
+
+            //Set the insets to get the elevates shadow effect (refer to the menu_shape_xml for better understanding)
+            drawable.setLayerInset(0, 0, 0, 0, 0);
+            drawable.setLayerInset(1, (int) d2x(1), (int) d2x(1), (int) d2x(1), (int) d2x(1));
+            drawable.setLayerInset(2, (int) d2x(2), (int) d2x(2), (int) d2x(2), (int) d2x(2));
+            drawable.setLayerInset(3, (int) d2x(3), (int) d2x(3), (int) d2x(3), (int) d2x(3));
+            drawable.setLayerInset(4, (int) d2x(2), (int) d2x(2), (int) d2x(2), (int) d2x(4));
+
+            backgroundDrawable = drawable;
+        }
+        else {
+            backgroundDrawable = foregroundShape;
+        }
+
+        return backgroundDrawable;
+    }
+
+    /**
      * Override onDraw to draw the selector cicle. We will also use this function to draw the Metaball Animation
      *
      * @author Melvin Lobo
      */
     @Override
     protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
+
+        /*if(!mbBackgroundSet) {
+
+            //Set the background shape color
+            Drawable drawable = getBackground();
+
+            GradientDrawable shape = null;
+            if(drawable instanceof LayerDrawable) {
+                shape = (GradientDrawable) ((LayerDrawable)drawable).findDrawableByLayerId(R.id.shape_foreground);
+            }
+            else if(drawable instanceof GradientDrawable) {
+                shape = (GradientDrawable) drawable;
+            }
+
+            shape.setColor(mBackgroundColor);
+
+            //setBackground(createBackgroundShape());
+
+            mbBackgroundSet = true;
+        }*/
 
         if(!mbShowAnimation)
             drawSelector(canvas);
         else
             drawMetaballTransition(canvas);
+
+
+        super.onDraw(canvas);
+    }
+
+    /**
+     * Convert dip to pixels
+     *
+     * param size
+     *            The size to be converted
+     *
+     * @author Melvin Lobo
+     */
+    private float d2x(int size) {
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, size, getContext().getResources().getDisplayMetrics());
     }
 
     /**
@@ -568,7 +706,7 @@ public class MetaballMenu extends LinearLayout {
 			int nLargerSide = Math.max(rect.width(), rect.height());
 
 			// Diag of a square = (side)^2. Therefore, mnRadius = Diag / 2 + Some padding for breathing space
-			mnSelectorRadius = ((nLargerSide ^ 2) / 2) + (int) (getResources().getDimension(R.dimen.image_padding));
+			mnSelectorRadius = ((nLargerSide ^ 2) / 2) + mDrawablePadding;
 		}
 
         return mnSelectorRadius;
