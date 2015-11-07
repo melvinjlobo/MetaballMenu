@@ -19,17 +19,17 @@ The usage is fairly easy.
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/metaball_menu"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center"
     android:orientation="horizontal"
+    android:padding="10dp"
+    android:layout_gravity="center"
     app:backgroundColor="@android:color/holo_purple"
     app:metaballColor="@android:color/white"
-    android:gravity="center"
-    tools:context=".MainActivity">
+    app:drawablePadding="10dp"
+    app:backgroundShapeRadius="30dp"
+    app:needsElevation="true">
  
     <ImageView
         android:id="@+id/menuitem1"
@@ -80,5 +80,3 @@ ____
 
 
 [![Android Arsenal](https://img.shields.io/badge/Android%20Arsenal-MetaballMenu-green.svg?style=flat)](https://android-arsenal.com/details/1/2697)
- 
-
