@@ -360,26 +360,6 @@ public class MetaballMenu extends LinearLayout {
     @Override
     protected void onDraw(Canvas canvas) {
 
-        /*if(!mbBackgroundSet) {
-
-            //Set the background shape color
-            Drawable drawable = getBackground();
-
-            GradientDrawable shape = null;
-            if(drawable instanceof LayerDrawable) {
-                shape = (GradientDrawable) ((LayerDrawable)drawable).findDrawableByLayerId(R.id.shape_foreground);
-            }
-            else if(drawable instanceof GradientDrawable) {
-                shape = (GradientDrawable) drawable;
-            }
-
-            shape.setColor(mBackgroundColor);
-
-            //setBackground(createBackgroundShape());
-
-            mbBackgroundSet = true;
-        }*/
-
         if(!mbShowAnimation)
             drawSelector(canvas);
         else

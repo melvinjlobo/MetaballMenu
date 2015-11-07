@@ -7,6 +7,7 @@
     android:gravity="center"
     android:orientation="horizontal"
     android:padding="10dp"
+    android:layout_gravity="center"
     app:backgroundColor="@android:color/holo_purple"
     app:metaballColor="@android:color/white"
     app:drawablePadding="10dp"
