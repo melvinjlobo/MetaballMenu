@@ -14,35 +14,41 @@
     app:backgroundShapeRadius="30dp"
     app:needsElevation="true">
 
-    <ImageView
+    <com.metaballmenu.widgets.MetaballMenuImageView
         android:id="@+id/menuitem1"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:padding="10dp"
-        android:src="@mipmap/card" />
+        app:defaultImage="@mipmap/card_sel"
+        app:selectedImage="@mipmap/card"/>
 
-    <ImageView
+    <com.metaballmenu.widgets.MetaballMenuImageView
         android:id="@+id/menuitem2"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:padding="10dp"
-        android:src="@mipmap/dash" />
+        app:defaultImage="@mipmap/dash_sel"
+        app:selectedImage="@mipmap/dash"
+        />
 
-    <ImageView
+    <com.metaballmenu.widgets.MetaballMenuImageView
         android:id="@+id/menuitem3"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:padding="10dp"
-        android:src="@mipmap/desc" />
+        app:defaultImage="@mipmap/desc_sel"
+        app:selectedImage="@mipmap/desc"
+        />
 
-    <ImageView
+    <com.metaballmenu.widgets.MetaballMenuImageView
         android:id="@+id/menuitem4"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:padding="10dp"
-        android:src="@mipmap/hist" />
+        app:defaultImage="@mipmap/hist_sel"
+        app:selectedImage="@mipmap/hist"/>
 </com.metaballmenu.widgets.MetaballMenu>

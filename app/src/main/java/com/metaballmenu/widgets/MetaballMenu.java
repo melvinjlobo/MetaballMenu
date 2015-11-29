@@ -4,17 +4,13 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
-import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.RoundRectShape;
-import android.graphics.drawable.shapes.Shape;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -51,22 +47,17 @@ public class MetaballMenu extends LinearLayout {
     /**
      * The background color for the view
      */
-    private int mBackgroundColor;
+    private int mnBackgroundColor;
 
     /**
      * The color of the Metaball animation
      */
-    private int mMetaballColor;
+    private int mnMetaballColor;
 
     /**
      * Paint to draw the Filled Metaball, transitional ball and selector
      */
     private Paint mMetaballDestination = new Paint(Paint.ANTI_ALIAS_FLAG);
-
-    /**
-     * The selected child
-     */
-    private View mSelectedChild = null;
 
     /**
      * Variable to decide whether the selector or animation has to be shown in onDraw
@@ -77,7 +68,7 @@ public class MetaballMenu extends LinearLayout {
      * Store the current mInterpolation time so that we can use it when drawing on the canvas
      * to show animation
      */
-    private float mInterpolatedTime = 0;
+    private float mfInterpolatedTime = 0;
 
     /**
      * The transition animation object so that we don't have to instantiate it every time
@@ -106,7 +97,7 @@ public class MetaballMenu extends LinearLayout {
     /**
      * The selector radius
      */
-    private float mnSelectorRadius = 0.0f;
+    private float mfSelectorRadius = 0.0f;
 
     /**
      * The Currently selected Child View (Menu Option)
@@ -116,7 +107,7 @@ public class MetaballMenu extends LinearLayout {
     /**
      * The current transition distance (Origin to Destination)
      */
-    private float mTransitionDistance = 0.0f;
+    private float mfTransitionDistance = 0.0f;
 
     /**
      * The Menu click listener
@@ -131,12 +122,12 @@ public class MetaballMenu extends LinearLayout {
     /**
      * The padding around the image to add to the breathing space to draw the selector
      */
-    private float mDrawablePadding = 0.0f;
+    private float mfDrawablePadding = 0.0f;
 
     /**
      * The background shape radius
      */
-    private float mBackgroundShapeRadius = 0.0f;
+    private float mfBackgroundShapeRadius = 0.0f;
 
     /**
      * Indicates if we need an elevation for the background shape
@@ -208,21 +199,20 @@ public class MetaballMenu extends LinearLayout {
         if(attrs != null) {
             TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.MetaballMenu, 0, 0);
 
-            mBackgroundColor = a.getColor(R.styleable.MetaballMenu_backgroundColor, ContextCompat.getColor(context, android.R.color.holo_purple));
-            mMetaballColor = a.getColor(R.styleable.MetaballMenu_metaballColor, ContextCompat.getColor(context, android.R.color.white));
-            mDrawablePadding = a.getDimension(R.styleable.MetaballMenu_drawablePadding, 0.0f);
-            mBackgroundShapeRadius = a.getDimension(R.styleable.MetaballMenu_backgroundShapeRadius, d2x(DEFAULT_BACKGROUND_RADIUS));
+            mnBackgroundColor = a.getColor(R.styleable.MetaballMenu_backgroundColor, ContextCompat.getColor(context, android.R.color.holo_purple));
+            mnMetaballColor = a.getColor(R.styleable.MetaballMenu_metaballColor, ContextCompat.getColor(context, android.R.color.white));
+            mfDrawablePadding = a.getDimension(R.styleable.MetaballMenu_drawablePadding, 0.0f);
+            mfBackgroundShapeRadius = a.getDimension(R.styleable.MetaballMenu_backgroundShapeRadius, d2x(DEFAULT_BACKGROUND_RADIUS));
             mbElevationRequired = a.getBoolean(R.styleable.MetaballMenu_needsElevation, false);
 
             // Initialize the Metaball paint
-            mMetaballDestination.setColor(mMetaballColor);
+            mMetaballDestination.setColor(mnMetaballColor);
             mMetaballDestination.setStyle(Paint.Style.FILL);
 
             a.recycle();
         }
 
         //Set the background color
-        //setBackgroundColor(mBackgroundColor);
         setBackground(createBackgroundShape());
 
         //Set the orientation
@@ -254,7 +244,7 @@ public class MetaballMenu extends LinearLayout {
     }
 
     /**
-     * Handle the finish inflate event to set up click listeners for the imageviews (menu items).
+     * Handle the finish inflate event to set up click listeners for the MetaBallImageViews (menu items).
      * Also, set up the first item as selected.
      *
      * @author Melvin Lobo
@@ -271,13 +261,13 @@ public class MetaballMenu extends LinearLayout {
                     if(mbShowAnimation)
                        stopAnimation();
 
-                    mSelectedChild = v;
                     mbShowAnimation = true;
                     mOriginPoint = getCenter(mSelectedView);
+                    ((MetaballMenuImageView)mSelectedView).setSelected(false);
                     mSelectedView = v;
                     mDestinationPoint = getCenter(mSelectedView);
-                    mTransitionDistance = mDestinationPoint.getX() - mOriginPoint.getX();
-                    mnSelectorRadius = 0.0f; //Reset the selector radius, so that it can be calculated
+                    mfTransitionDistance = mDestinationPoint.getX() - mOriginPoint.getX();
+                    mfSelectorRadius = 0.0f; //Reset the selector radius, so that it can be calculated
                                              // based on the currently selected view size
                     startAnimation();
                 }
@@ -286,6 +276,7 @@ public class MetaballMenu extends LinearLayout {
 
         //Set the first child as the selected View  during initialization
         mSelectedView = getChildAt(0);
+        ((MetaballMenuImageView)mSelectedView).setSelected(true);
         invalidate();
 
         super.onFinishInflate();
@@ -301,14 +292,14 @@ public class MetaballMenu extends LinearLayout {
      */
     private Drawable createBackgroundShape() {
         //The radius array to draw the round rect shape. Each pair is for one corner
-        float[] radiiFloat = new float[] {mBackgroundShapeRadius, mBackgroundShapeRadius, mBackgroundShapeRadius, mBackgroundShapeRadius,
-                            mBackgroundShapeRadius, mBackgroundShapeRadius, mBackgroundShapeRadius, mBackgroundShapeRadius};
+        float[] radiiFloat = new float[] {mfBackgroundShapeRadius, mfBackgroundShapeRadius, mfBackgroundShapeRadius, mfBackgroundShapeRadius,
+                mfBackgroundShapeRadius, mfBackgroundShapeRadius, mfBackgroundShapeRadius, mfBackgroundShapeRadius};
         Drawable backgroundDrawable = null;
 
         //Foreground Shape
         RoundRectShape foregroundRect = new RoundRectShape(radiiFloat, null, null);
         ShapeDrawable foregroundShape = new ShapeDrawable(foregroundRect);
-        foregroundShape.getPaint().setColor(mBackgroundColor);
+        foregroundShape.getPaint().setColor(mnBackgroundColor);
 
         if(mbElevationRequired) {
             //First Shape
@@ -390,14 +381,14 @@ public class MetaballMenu extends LinearLayout {
      * @author Melvin Lobo
      */
     private void drawSelector(Canvas canvas) {
-        if(mnSelectorRadius == 0.0)
+        if(mfSelectorRadius == 0.0)
             calculateSelectorRadius();            //Calculate the selector radius
 
         // Find the center of the view, so that the selector circle can be drawn
         Point center = getCenter(mSelectedView);
 
         // Draw the circle
-        canvas.drawCircle(center.getX(), center.getY(), mnSelectorRadius, mMetaballDestination);
+        canvas.drawCircle(center.getX(), center.getY(), mfSelectorRadius, mMetaballDestination);
     }
 
     /**
@@ -436,12 +427,12 @@ public class MetaballMenu extends LinearLayout {
         float originRadius, destinationRadius = 0.0f;
 
         // Calculate the radii of the two circles which will be a function of the interpolator value.
-        originRadius = mnSelectorRadius - (mnSelectorRadius * mInterpolatedTime);       // This circle will reduce in size based on the interpolator value
-        destinationRadius = (mnSelectorRadius * mInterpolatedTime);                     // This circle will increase in size based on the interpolator value
+        originRadius = mfSelectorRadius - (mfSelectorRadius * mfInterpolatedTime);       // This circle will reduce in size based on the interpolator value
+        destinationRadius = (mfSelectorRadius * mfInterpolatedTime);                     // This circle will increase in size based on the interpolator value
 
          // Initialize the transitional circle if required (First animation frame)
         if(mTransitionalCircle == null) {
-            if(mnSelectorRadius == 0.0)
+            if(mfSelectorRadius == 0.0)
                 calculateSelectorRadius();                                                  //Calculate the selector radius
 
 			mTransitionalCircle = new Circle();
@@ -453,7 +444,7 @@ public class MetaballMenu extends LinearLayout {
 
         // Set the x co-ordinate of center of the transitional circle. This is based on the current interpolation value
         // of the distance between the two centers
-        mTransitionalCircle.setCenterX(mOriginPoint.getX() + (mTransitionDistance * mInterpolatedTime));
+        mTransitionalCircle.setCenterX(mOriginPoint.getX() + (mfTransitionDistance * mfInterpolatedTime));
 
         // Draw the transitional circle
         canvas.drawCircle(mTransitionalCircle.getCenterX(), mTransitionalCircle.getCenterY(), originRadius, mMetaballDestination);
@@ -625,6 +616,7 @@ public class MetaballMenu extends LinearLayout {
             @Override
             public void onAnimationEnd(Animation animation) {
                 mbShowAnimation = false;
+                ((MetaballMenuImageView)mSelectedView).setSelected(true);
                 clearValues();
                 if(mMenuClickListener != null)
                     mMenuClickListener.onClick(mSelectedView);
@@ -665,7 +657,7 @@ public class MetaballMenu extends LinearLayout {
         mbShowAnimation = false;
         mTransitionalCircle = null;
         mDestinationPoint = null;
-        mTransitionDistance = 0.0f;
+        mfTransitionDistance = 0.0f;
     }
 
 
@@ -678,18 +670,18 @@ public class MetaballMenu extends LinearLayout {
      */
     private float calculateSelectorRadius() {
 
-		if (mnSelectorRadius == 0.0f) {
+		if (mfSelectorRadius == 0.0f) {
 			// Get the selected child and the bounds of its drawable
-			final Rect rect = ((ImageView) mSelectedView).getDrawable().getBounds();
+			final Rect rect = ((MetaballMenuImageView) mSelectedView).getDrawable().getBounds();
 
 			// Calculate the selector radius
 			int nLargerSide = Math.max(rect.width(), rect.height());
 
 			// Diag of a square = (side)^2. Therefore, mnRadius = Diag / 2 + Some padding for breathing space
-			mnSelectorRadius = ((nLargerSide ^ 2) / 2) + mDrawablePadding;
+			mfSelectorRadius = ((nLargerSide ^ 2) / 2) + mfDrawablePadding;
 		}
 
-        return mnSelectorRadius;
+        return mfSelectorRadius;
     }
 
     //////////////////////////////////// INNER CLASSES /////////////////////////////////////////////
@@ -829,7 +821,7 @@ public class MetaballMenu extends LinearLayout {
         @Override
         protected void applyTransformation(float interpolatedTime, Transformation t) {
             super.applyTransformation(interpolatedTime, t);
-            mInterpolatedTime = interpolatedTime;
+            mfInterpolatedTime = interpolatedTime;
             invalidate();
         }
     }

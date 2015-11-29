@@ -8,4 +8,11 @@
         <attr name="backgroundShapeRadius" format="dimension" /> <!-- The radius value for the round rect background shape -->
         <attr name="needsElevation" format="boolean" />          <!-- Indicates if the background shape needs elevation -->
     </declare-styleable>
+
+    <!-- Custom attributes for Metaball Menu -->
+    <declare-styleable name="MetaballMenuImageView">
+        <attr name="defaultImage" format="reference"/>         <!-- The default non-selected image source -->
+        <attr name="selectedImage" format="reference"/>         <!-- The selected image source -->
+    </declare-styleable>
+
 </resources>
