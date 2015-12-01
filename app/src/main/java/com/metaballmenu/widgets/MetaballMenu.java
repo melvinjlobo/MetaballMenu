@@ -212,7 +212,7 @@ public class MetaballMenu extends LinearLayout {
             a.recycle();
         }
 
-        //Set the background color
+        //Set the background shape
         setBackground(createBackgroundShape());
 
         //Set the orientation
@@ -241,6 +241,19 @@ public class MetaballMenu extends LinearLayout {
      */
     public void setMenuClickListener(MetaballMenuClickListener menuClickListener) {
         mMenuClickListener = menuClickListener;
+    }
+
+    /**
+     * Set the background elevation
+     *
+     * @param bRequired
+     *      True if elevation is required, false otherwise
+     *
+     * @author Melvin Lobo
+     */
+    public void setElevationRequired(boolean bRequired) {
+        mbElevationRequired = bRequired;
+        setBackground(createBackgroundShape());
     }
 
     /**
