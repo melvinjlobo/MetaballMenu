@@ -11,7 +11,9 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.RoundRectShape;
+import android.os.Build;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.ViewCompat;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
@@ -43,6 +45,7 @@ public class MetaballMenu extends LinearLayout {
     private static final String SHAPE_2_COLOR = "#13000000";
     private static final String SHAPE_3_COLOR = "#20000000";
     private static final int DEFAULT_BACKGROUND_RADIUS = 20;
+    private static final float ELEVATION = 6.0f;
 
     /**
      * The background color for the view
@@ -118,11 +121,6 @@ public class MetaballMenu extends LinearLayout {
      * Note if the background color has been set
      */
     private boolean mbBackgroundSet = false;
-
-    /**
-     * The padding around the image to add to the breathing space to draw the selector
-     */
-    private float mfDrawablePadding = 0.0f;
 
     /**
      * The background shape radius
@@ -201,7 +199,6 @@ public class MetaballMenu extends LinearLayout {
 
             mnBackgroundColor = a.getColor(R.styleable.MetaballMenu_backgroundColor, ContextCompat.getColor(context, android.R.color.holo_purple));
             mnMetaballColor = a.getColor(R.styleable.MetaballMenu_metaballColor, ContextCompat.getColor(context, android.R.color.white));
-            mfDrawablePadding = a.getDimension(R.styleable.MetaballMenu_drawablePadding, 0.0f);
             mfBackgroundShapeRadius = a.getDimension(R.styleable.MetaballMenu_backgroundShapeRadius, d2x(DEFAULT_BACKGROUND_RADIUS));
             mbElevationRequired = a.getBoolean(R.styleable.MetaballMenu_needsElevation, false);
 
@@ -213,7 +210,19 @@ public class MetaballMenu extends LinearLayout {
         }
 
         //Set the background shape
-        setBackground(createBackgroundShape());
+        if(mbElevationRequired) {
+            //For Lollipop and above, you can set the elevation programmatically
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                mbElevationRequired = false;
+                ViewCompat.setElevation(this, ELEVATION);
+                setBackground(createBackgroundShape());
+            }
+            else
+                setBackground(createBackgroundShape());
+        }
+        else {
+            setBackground(createBackgroundShape());
+        }
 
         //Set the orientation
         setOrientation(LinearLayout.HORIZONTAL);
@@ -276,8 +285,9 @@ public class MetaballMenu extends LinearLayout {
 
                     mbShowAnimation = true;
                     mOriginPoint = getCenter(mSelectedView);
-                    ((MetaballMenuImageView)mSelectedView).setSelected(false);
+                    ((MetaballMenuImageView)mSelectedView).setSelected(false);      // unselect the previoud selection if any
                     mSelectedView = v;
+                    ((MetaballMenuImageView)mSelectedView).setSelected(true);       // select the new selection
                     mDestinationPoint = getCenter(mSelectedView);
                     mfTransitionDistance = mDestinationPoint.getX() - mOriginPoint.getX();
                     mfSelectorRadius = 0.0f; //Reset the selector radius, so that it can be calculated
@@ -293,6 +303,67 @@ public class MetaballMenu extends LinearLayout {
         invalidate();
 
         super.onFinishInflate();
+    }
+
+   /* @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        //super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        int nFinalHeight = 0, nFinalWidth = 0;
+
+        //Get the height of the largest child
+        int nLargestChildHeight = 0, nWidthCumulative = 0;
+        int childCount = getChildCount();
+        for(int nCtr = 0; nCtr < childCount; ++nCtr) {
+            View child = getChildAt(nCtr);
+            child.measure(widthMeasureSpec, heightMeasureSpec);
+
+            //Height
+            if(child.getMeasuredHeight() > nLargestChildHeight)
+                nLargestChildHeight = child.getMeasuredHeight();
+
+            //Width
+            nWidthCumulative += child.getMeasuredWidth();
+        }
+
+        nFinalHeight = getPaddingTop() + nLargestChildHeight + getPaddingBottom(); // + (int)(mfDrawablePadding * 2)
+        nFinalHeight = getOptimalValue(nFinalHeight, MeasureSpec.getSize(heightMeasureSpec), MeasureSpec.getMode(heightMeasureSpec));
+
+        //Get the width
+        nFinalWidth = getPaddingLeft() + getPaddingRight() + nWidthCumulative; // + (int)(mfDrawablePadding * 2)
+        nFinalWidth = getOptimalValue(nFinalWidth, MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.getMode(widthMeasureSpec));
+
+        setMeasuredDimension(nFinalWidth, nFinalHeight);
+
+    }*/
+
+    /**
+     * Get the optimum desired values based on the Mode recommendation during onMeasure
+     *
+     * @param nDesiredValue
+     *            The desired value that we calculated
+     * @param nRecommendedValue
+     *            The recommended value that is passed in an onMeasure Pass
+     * @param nMode
+     *            The Mode that is passed in onMeasure Pass
+     *
+     * @return The optimal value to be used based on the Mode
+     */
+    private int getOptimalValue(int nDesiredValue, int nRecommendedValue, int nMode) {
+        int nFinalWidth = nDesiredValue;
+
+        switch (nMode) {
+            case MeasureSpec.EXACTLY:
+                nFinalWidth = nRecommendedValue; // No Choice
+                break;
+            case MeasureSpec.AT_MOST:
+                nFinalWidth = Math.min(nDesiredValue, nRecommendedValue);
+                break;
+            default: // MeasureSpec.UNSPECIFIED
+                nFinalWidth = nDesiredValue;
+                break;
+        }
+
+        return nFinalWidth;
     }
 
     /**
@@ -312,27 +383,32 @@ public class MetaballMenu extends LinearLayout {
         //Foreground Shape
         RoundRectShape foregroundRect = new RoundRectShape(radiiFloat, null, null);
         ShapeDrawable foregroundShape = new ShapeDrawable(foregroundRect);
+        foregroundShape.setPadding(0, 0, 0, 0);
         foregroundShape.getPaint().setColor(mnBackgroundColor);
 
         if(mbElevationRequired) {
             //First Shape
             RoundRectShape rect1 = new RoundRectShape(radiiFloat, null, null);
             ShapeDrawable shape1 = new ShapeDrawable(rect1);
+            shape1.setPadding(0, 0, 0, 0);
             shape1.getPaint().setColor(Color.parseColor(SHAPE_1_COLOR));
 
             //Second Shape
             RoundRectShape rect2 = new RoundRectShape(radiiFloat, null, null);
             ShapeDrawable shape2 = new ShapeDrawable(rect2);
+            shape2.setPadding(0, 0, 0, 0);
             shape2.getPaint().setColor(Color.parseColor(SHAPE_2_COLOR));
 
             //Third Shape
             RoundRectShape rect3 = new RoundRectShape(radiiFloat, null, null);
             ShapeDrawable shape3 = new ShapeDrawable(rect3);
+            shape3.setPadding(0, 0, 0, 0);
             shape3.getPaint().setColor(Color.parseColor(SHAPE_3_COLOR));
 
             //Fourth Shape
             RoundRectShape rect4 = new RoundRectShape(radiiFloat, null, null);
             ShapeDrawable shape4 = new ShapeDrawable(rect4);
+            shape4.setPadding(0, 0, 0, 0);
             shape4.getPaint().setColor(Color.parseColor(SHAPE_2_COLOR));
 
             //Create an array of shapes for the layer list
@@ -346,6 +422,8 @@ public class MetaballMenu extends LinearLayout {
             drawable.setLayerInset(2, (int) d2x(2), (int) d2x(2), (int) d2x(2), (int) d2x(2));
             drawable.setLayerInset(3, (int) d2x(3), (int) d2x(3), (int) d2x(3), (int) d2x(3));
             drawable.setLayerInset(4, (int) d2x(2), (int) d2x(2), (int) d2x(2), (int) d2x(4));
+
+//            drawable.setPaddingMode(LayerDrawable.PADDING_MODE_STACK);
 
             backgroundDrawable = drawable;
         }
@@ -629,7 +707,6 @@ public class MetaballMenu extends LinearLayout {
             @Override
             public void onAnimationEnd(Animation animation) {
                 mbShowAnimation = false;
-                ((MetaballMenuImageView)mSelectedView).setSelected(true);
                 clearValues();
                 if(mMenuClickListener != null)
                     mMenuClickListener.onClick(mSelectedView);
@@ -684,14 +761,17 @@ public class MetaballMenu extends LinearLayout {
     private float calculateSelectorRadius() {
 
 		if (mfSelectorRadius == 0.0f) {
-			// Get the selected child and the bounds of its drawable
-			final Rect rect = ((MetaballMenuImageView) mSelectedView).getDrawable().getBounds();
+
+            // Get the height and width of the child. Tha padding on the child acts as bounds for the
+            // selector to be drawn
+            int nHeight = mSelectedView.getHeight();
+            int nWidth = mSelectedView.getWidth();
 
 			// Calculate the selector radius
-			int nLargerSide = Math.max(rect.width(), rect.height());
+			int nLargerSide = Math.max(nWidth, nHeight);
 
-			// Diag of a square = (side)^2. Therefore, mnRadius = Diag / 2 + Some padding for breathing space
-			mfSelectorRadius = ((nLargerSide ^ 2) / 2) + mfDrawablePadding;
+			// Diag of a square = (side)^2. Therefore, mnRadius = Diag / 2
+			mfSelectorRadius = ((nLargerSide ^ 2) / 2) ;
 		}
 
         return mfSelectorRadius;

@@ -10,9 +10,8 @@
     android:layout_gravity="center"
     app:backgroundColor="@android:color/holo_purple"
     app:metaballColor="@android:color/white"
-    app:drawablePadding="10dp"
     app:backgroundShapeRadius="30dp"
-    app:needsElevation="true">
+    app:needsElevation="false">
 
     <com.metaballmenu.widgets.MetaballMenuImageView
         android:id="@+id/menuitem1"
