@@ -6,7 +6,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.ShapeDrawable;
@@ -20,7 +19,6 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.BounceInterpolator;
 import android.view.animation.Transformation;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.metaballmenu.R;
@@ -209,20 +207,19 @@ public class MetaballMenu extends LinearLayout {
             a.recycle();
         }
 
-        //Set the background shape
-        if(mbElevationRequired) {
-            //For Lollipop and above, you can set the elevation programmatically
-            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                mbElevationRequired = false;
-                ViewCompat.setElevation(this, ELEVATION);
-                setBackground(createBackgroundShape());
-            }
-            else
-                setBackground(createBackgroundShape());
-        }
-        else {
-            setBackground(createBackgroundShape());
-        }
+        /*
+         * A very nasty bug that exists pre-kitkat which I spent hours figuring out. If we assign a
+         * Layerdrawable or a 9-patch, the view loses its padding (weird!). It works for a png or a shape
+         * as expected. So, we need to get the padding, set the background resource and re-set the padding
+         * back to the original values we retrieved. This should give the background shapre to pre-lollipop devices
+         */
+        int pL = getPaddingLeft();
+        int pR = getPaddingRight();
+        int pT = getPaddingTop();
+        int pB = getPaddingBottom();
+
+        setBackgroundResource();
+        setPadding(pL, pT, pR, pB);
 
         //Set the orientation
         setOrientation(LinearLayout.HORIZONTAL);
@@ -305,65 +302,25 @@ public class MetaballMenu extends LinearLayout {
         super.onFinishInflate();
     }
 
-   /* @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        //super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        int nFinalHeight = 0, nFinalWidth = 0;
-
-        //Get the height of the largest child
-        int nLargestChildHeight = 0, nWidthCumulative = 0;
-        int childCount = getChildCount();
-        for(int nCtr = 0; nCtr < childCount; ++nCtr) {
-            View child = getChildAt(nCtr);
-            child.measure(widthMeasureSpec, heightMeasureSpec);
-
-            //Height
-            if(child.getMeasuredHeight() > nLargestChildHeight)
-                nLargestChildHeight = child.getMeasuredHeight();
-
-            //Width
-            nWidthCumulative += child.getMeasuredWidth();
-        }
-
-        nFinalHeight = getPaddingTop() + nLargestChildHeight + getPaddingBottom(); // + (int)(mfDrawablePadding * 2)
-        nFinalHeight = getOptimalValue(nFinalHeight, MeasureSpec.getSize(heightMeasureSpec), MeasureSpec.getMode(heightMeasureSpec));
-
-        //Get the width
-        nFinalWidth = getPaddingLeft() + getPaddingRight() + nWidthCumulative; // + (int)(mfDrawablePadding * 2)
-        nFinalWidth = getOptimalValue(nFinalWidth, MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.getMode(widthMeasureSpec));
-
-        setMeasuredDimension(nFinalWidth, nFinalHeight);
-
-    }*/
-
     /**
-     * Get the optimum desired values based on the Mode recommendation during onMeasure
-     *
-     * @param nDesiredValue
-     *            The desired value that we calculated
-     * @param nRecommendedValue
-     *            The recommended value that is passed in an onMeasure Pass
-     * @param nMode
-     *            The Mode that is passed in onMeasure Pass
-     *
-     * @return The optimal value to be used based on the Mode
+     * Set the background drawable
+     * @author Melvin Lobo
      */
-    private int getOptimalValue(int nDesiredValue, int nRecommendedValue, int nMode) {
-        int nFinalWidth = nDesiredValue;
-
-        switch (nMode) {
-            case MeasureSpec.EXACTLY:
-                nFinalWidth = nRecommendedValue; // No Choice
-                break;
-            case MeasureSpec.AT_MOST:
-                nFinalWidth = Math.min(nDesiredValue, nRecommendedValue);
-                break;
-            default: // MeasureSpec.UNSPECIFIED
-                nFinalWidth = nDesiredValue;
-                break;
+    private void setBackgroundResource() {
+        //Set the background shape
+        if(mbElevationRequired) {
+            //For Lollipop and above, you can set the elevation programmatically
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                mbElevationRequired = false;
+                ViewCompat.setElevation(this, ELEVATION);
+                setBackground(createBackgroundShape());
+            }
+            else
+                setBackground(createBackgroundShape());
         }
-
-        return nFinalWidth;
+        else {
+            setBackground(createBackgroundShape());
+        }
     }
 
     /**
@@ -383,32 +340,27 @@ public class MetaballMenu extends LinearLayout {
         //Foreground Shape
         RoundRectShape foregroundRect = new RoundRectShape(radiiFloat, null, null);
         ShapeDrawable foregroundShape = new ShapeDrawable(foregroundRect);
-        foregroundShape.setPadding(0, 0, 0, 0);
         foregroundShape.getPaint().setColor(mnBackgroundColor);
 
         if(mbElevationRequired) {
             //First Shape
             RoundRectShape rect1 = new RoundRectShape(radiiFloat, null, null);
             ShapeDrawable shape1 = new ShapeDrawable(rect1);
-            shape1.setPadding(0, 0, 0, 0);
             shape1.getPaint().setColor(Color.parseColor(SHAPE_1_COLOR));
 
             //Second Shape
             RoundRectShape rect2 = new RoundRectShape(radiiFloat, null, null);
             ShapeDrawable shape2 = new ShapeDrawable(rect2);
-            shape2.setPadding(0, 0, 0, 0);
             shape2.getPaint().setColor(Color.parseColor(SHAPE_2_COLOR));
 
             //Third Shape
             RoundRectShape rect3 = new RoundRectShape(radiiFloat, null, null);
             ShapeDrawable shape3 = new ShapeDrawable(rect3);
-            shape3.setPadding(0, 0, 0, 0);
             shape3.getPaint().setColor(Color.parseColor(SHAPE_3_COLOR));
 
             //Fourth Shape
             RoundRectShape rect4 = new RoundRectShape(radiiFloat, null, null);
             ShapeDrawable shape4 = new ShapeDrawable(rect4);
-            shape4.setPadding(0, 0, 0, 0);
             shape4.getPaint().setColor(Color.parseColor(SHAPE_2_COLOR));
 
             //Create an array of shapes for the layer list
@@ -422,8 +374,6 @@ public class MetaballMenu extends LinearLayout {
             drawable.setLayerInset(2, (int) d2x(2), (int) d2x(2), (int) d2x(2), (int) d2x(2));
             drawable.setLayerInset(3, (int) d2x(3), (int) d2x(3), (int) d2x(3), (int) d2x(3));
             drawable.setLayerInset(4, (int) d2x(2), (int) d2x(2), (int) d2x(2), (int) d2x(4));
-
-//            drawable.setPaddingMode(LayerDrawable.PADDING_MODE_STACK);
 
             backgroundDrawable = drawable;
         }

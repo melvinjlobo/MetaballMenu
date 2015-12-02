@@ -5,13 +5,13 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:gravity="center"
-    android:orientation="horizontal"
     android:padding="10dp"
+    android:orientation="horizontal"
     android:layout_gravity="center"
     app:backgroundColor="@android:color/holo_purple"
     app:metaballColor="@android:color/white"
     app:backgroundShapeRadius="30dp"
-    app:needsElevation="false">
+    app:needsElevation="true">
 
     <com.metaballmenu.widgets.MetaballMenuImageView
         android:id="@+id/menuitem1"
